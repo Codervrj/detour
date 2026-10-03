@@ -31,7 +31,7 @@ from typing import Any
 
 import polars as pl
 
-from detour.config import write_sidecar
+from detour.config import load_env, write_sidecar
 
 API_ROOT = "https://ws.audioscrobbler.com/2.0/"
 PAGE_SIZE = 200
@@ -47,7 +47,8 @@ class LastfmError(RuntimeError):
 
 
 def api_key(explicit: str | None = None) -> str:
-    """The API key, from the argument or the environment."""
+    """The API key, from the argument, the environment, or .env."""
+    load_env()
     key = explicit or os.environ.get("LASTFM_API_KEY", "")
     if not key:
         raise SystemExit(
@@ -172,9 +173,13 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import your Last.fm listening history.")
-    parser.add_argument("--user", required=True, help="your Last.fm username")
+    parser.add_argument("--user", default=None, help="your Last.fm username")
     parser.add_argument("--api-key", default=None, help="defaults to $LASTFM_API_KEY")
     parser.add_argument("--max-pages", type=int, default=None, help="limit for a quick test")
     parser.add_argument("--out", default="data/personal/listens.parquet")
     args = parser.parse_args()
-    main(args.user, args.api_key, args.max_pages, args.out)
+    load_env()
+    user = args.user or os.environ.get("LASTFM_USER", "")
+    if not user:
+        raise SystemExit("No username. Pass --user NAME or set LASTFM_USER in .env")
+    main(user, args.api_key, args.max_pages, args.out)

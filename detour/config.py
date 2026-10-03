@@ -7,8 +7,19 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
 
 DEDUPE_WINDOW_SECONDS = 30
+
+
+def load_env() -> None:
+    """Read .env into the environment.
+
+    Without this, a key sitting in .env is invisible: the code reads os.environ and
+    nothing ever puts the file's contents there. Values already set in the real
+    environment win, so an explicit export still overrides the file.
+    """
+    load_dotenv(Path.cwd() / ".env", override=False)
 
 
 def load_config(path: str) -> dict[str, Any]:
