@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from detour.foldin import Placement, edge_artists, nearest, place
+from detour.foldin import Placement, nearest, place
 from detour.ingest.resolve import Resolution, resolve
 
 
@@ -111,18 +111,15 @@ class MapService:
     def frontier(
         self, placement: Placement, counts: dict[str, int], k: int = 20
     ) -> list[tuple[str, float]]:
-        """Artists just outside this listener's territory.
+        """Artists nearest this listener's position that they have not played.
 
-        Measured from the listener's own edge artists rather than their centre, because the
-        interesting ground is next to where their taste already reaches, not next to its
-        middle.
+        Measured from the listener's centre, which is **the exact ranking the evaluation
+        scored** at an adoption rank percentile of 0.1158. Anchoring on their edge artists
+        was tried and rejected: edges are obscure outliers, so the result was obscure
+        artists near other obscure artists, and nothing on screen would have had evidence
+        behind it.
         """
-        edges = [artist for artist, _ in edge_artists(placement, k=5)]
-        if not edges:
-            return nearest(placement.position, self.vectors, k, exclude=set(counts))
-
-        anchor = np.mean([self.vectors[a] for a in edges if a in self.vectors], axis=0)
-        return nearest(anchor, self.vectors, k, exclude=set(counts))
+        return nearest(placement.position, self.vectors, k, exclude=set(counts))
 
     def islands(self, counts: dict[str, int], max_islands: int = 6) -> list[Island]:
         """Cluster a listener's own artists into coherent groups.

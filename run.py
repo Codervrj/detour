@@ -24,7 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 ARTIFACTS = ROOT / "artifacts"
-CONFIG = "evals/configs/smoke.yaml"
+CONFIG = "evals/configs/main.yaml"
 API_PORT = 8000
 WEB_PORT = 5173
 
@@ -32,10 +32,10 @@ WEB_PORT = 5173
 ENV = {**os.environ, "OPENBLAS_NUM_THREADS": "1", "PYTHONIOENCODING": "utf-8"}
 
 PIPELINE_ARTEFACTS = [
-    ARTIFACTS / "als_candidates.parquet",
-    ARTIFACTS / "popularity.parquet",
-    ARTIFACTS / "explorer_scores.parquet",
+    ARTIFACTS / "artist_vectors.parquet",
+    ARTIFACTS / "map_2d.parquet",
 ]
+RAW_LISTENS = ROOT / "data" / "raw" / "listens.parquet"
 
 
 def run(command: list[str], check: bool = True) -> int:
@@ -73,18 +73,39 @@ def cmd_setup(_: argparse.Namespace) -> None:
         print("  uv run python scripts/create_project.py --with-web")
 
 
-def cmd_fixtures(_: argparse.Namespace) -> None:
-    """Generate the synthetic listens the whole pipeline runs on."""
-    python("-m", "tests.fixtures.make_fixtures")
+def cmd_fetch(args: argparse.Namespace) -> None:
+    """Download real listening history from MLHD+, streamed and resumable."""
+    python(
+        "-m",
+        "detour.ingest.mlhd_loader",
+        "--users",
+        str(args.users),
+        "--from",
+        args.start_month,
+        "--months",
+        "12",
+    )
+
+
+def cmd_lastfm(args: argparse.Namespace) -> None:
+    """Import your own listening history from Last.fm."""
+    if not args.user:
+        print("Which Last.fm user? Pass --user YOURNAME")
+        print("You also need LASTFM_API_KEY in .env (see .env.example).")
+        sys.exit(1)
+    python("-m", "detour.ingest.lastfm", "--user", args.user)
 
 
 def cmd_pipeline(args: argparse.Namespace) -> None:
-    """fixtures -> clean -> split -> train -> artifacts."""
-    cmd_fixtures(args)
-    python("-m", "detour.clean.run")
+    """clean -> split -> map -> 2d projection."""
+    if not RAW_LISTENS.exists():
+        print("No listening data yet; fetching it first.")
+        cmd_fetch(args)
+    python("-m", "detour.clean.run", "--source", "data/raw/listens.parquet")
     python("-m", "detour.split", "--config", args.config)
-    python("-m", "detour.models.train", "--config", args.config)
-    print("\npipeline done. Artefacts are in artifacts/")
+    python("-m", "detour.models.artist_map", "--config", args.config)
+    python("-m", "detour.models.project", "--config", args.config)
+    print("\npipeline done. The map is in artifacts/")
 
 
 def cmd_eval(args: argparse.Namespace) -> None:
@@ -92,7 +113,7 @@ def cmd_eval(args: argparse.Namespace) -> None:
     if not pipeline_is_built():
         print("No artefacts yet; building the pipeline first.")
         cmd_pipeline(args)
-    python("-m", "detour.eval.harness", "--config", args.config, "--split", args.split)
+    python("-m", "detour.eval.map_harness", "--config", args.config, "--split", args.split)
 
 
 def cmd_api(args: argparse.Namespace) -> None:
@@ -172,7 +193,8 @@ def cmd_demo(args: argparse.Namespace) -> None:
 
 COMMANDS = {
     "setup": cmd_setup,
-    "fixtures": cmd_fixtures,
+    "fetch": cmd_fetch,
+    "lastfm": cmd_lastfm,
     "pipeline": cmd_pipeline,
     "eval": cmd_eval,
     "api": cmd_api,
@@ -198,6 +220,9 @@ def main() -> None:
     parser.add_argument(
         "--split", default="val", choices=["val", "test"], help="eval split (default: val)"
     )
+    parser.add_argument("--users", type=int, default=2000, help="listeners to fetch")
+    parser.add_argument("--from", dest="start_month", default="2011-01", help="YYYY-MM")
+    parser.add_argument("--user", default=None, help="your Last.fm username")
     args = parser.parse_args()
     COMMANDS[args.command](args)
 
