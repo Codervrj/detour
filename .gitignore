@@ -11,3 +11,8 @@ node_modules/
 web/dist/
 evals/reports/*.json
 evals/reports/*.md
+
+# Playwright MCP scratch output
+.playwright-mcp/
+*.png
+!docs/screenshots/*.png
