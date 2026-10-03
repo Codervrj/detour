@@ -1,0 +1,58 @@
+/* A row of listeners ordered by explorer score, so the spectrum itself is visible
+   left to right. Selection is a real radio group under the hood. */
+
+.pickers {
+  display: flex;
+  gap: var(--s-2);
+  overflow-x: auto;
+  padding-bottom: var(--s-2);
+  scrollbar-width: thin;
+}
+
+.picker {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.picker input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.picker__face {
+  display: block;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: var(--s-2) var(--s-3);
+  cursor: pointer;
+  min-width: 7.5rem;
+}
+
+.picker__face:hover {
+  border-color: var(--ink-soft);
+}
+
+.picker input:checked + .picker__face {
+  border-color: var(--ink);
+  background: var(--surface-sunk);
+  box-shadow: inset 0 -3px 0 var(--unknown);
+}
+
+.picker input:focus-visible + .picker__face {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.picker__id {
+  display: block;
+  font-size: var(--t-s);
+  font-weight: 500;
+}
+
+.picker__score {
+  display: block;
+  color: var(--mid);
+  font-size: var(--t-xs);
+}

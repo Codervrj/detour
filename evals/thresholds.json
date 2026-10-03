@@ -1,0 +1,9 @@
+{
+  "note": "Regression gates for CI. Never edit these to make a failing run pass.",
+  "tolerance": {
+    "ndcg@20": 0.01,
+    "discovery_recall@20": 0.01
+  },
+  "last_accepted": null,
+  "must_beat_popularity_on": ["ndcg@20"]
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="4" fill="#16222b"/>
+  <!-- One path that leaves the straight line: the detour. -->
+  <path d="M4 22h8c6 0 6-12 12-12h4" fill="none" stroke="#0f6e72" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="26" cy="10" r="4" fill="#c2365b"/>
+</svg>

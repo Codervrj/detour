@@ -1,0 +1,147 @@
+/* Rows, not cards. One hairline between each, and a shared axis column that every
+   marker is positioned against. */
+
+.tracks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 2ch minmax(0, 1fr) minmax(6rem, 14rem) auto;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.track__rank {
+  color: var(--mid);
+  font-size: var(--t-s);
+  text-align: right;
+}
+
+.track__body {
+  min-width: 0;
+}
+
+.track__title {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.track__artist {
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+}
+
+/* The shared axis. The faint rule is the full familiar-to-unknown range; the marker's
+   left offset is the track's novelty. */
+.track__axis {
+  position: relative;
+  height: 1.25rem;
+}
+
+.track__axis::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--rule);
+}
+
+.track__marker {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 50%;
+  transition: left var(--motion);
+}
+
+.track__marker.is-familiar {
+  background: var(--familiar);
+}
+
+.track__marker.is-unknown {
+  background: var(--unknown);
+}
+
+.track__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  justify-self: end;
+}
+
+.tag {
+  font-size: var(--t-xs);
+  padding: 0.15em 0.6em;
+  border-radius: var(--radius-control);
+  white-space: nowrap;
+}
+
+.tag--familiar {
+  background: var(--familiar-wash);
+  color: var(--familiar);
+}
+
+.tag--unknown {
+  background: var(--unknown-wash);
+  color: var(--unknown);
+}
+
+.track__why {
+  font: inherit;
+  font-size: var(--t-xs);
+  color: var(--familiar);
+  background: none;
+  border: 0;
+  padding: var(--s-1) 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  white-space: nowrap;
+}
+
+.track__reason {
+  grid-column: 2 / -1;
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+  background: var(--surface);
+  border-left: 2px solid var(--familiar);
+  padding: var(--s-2) var(--s-3);
+  margin-top: var(--s-2);
+}
+
+/* The axis column is the first thing to go when space runs out: the tag and the
+   novelty figure still carry the same information in words. */
+@media (max-width: 52rem) {
+  .track {
+    grid-template-columns: 2ch minmax(0, 1fr) auto;
+  }
+
+  .track__axis {
+    display: none;
+  }
+
+  .track__reason {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (max-width: 30rem) {
+  .track {
+    grid-template-columns: 2ch minmax(0, 1fr);
+  }
+
+  .track__meta {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: var(--s-1);
+  }
+}

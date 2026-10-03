@@ -1,0 +1,105 @@
+/* The dial. The track is a familiar-to-unknown gradient, so the control carries the
+   same meaning as the colour of the markers in the list below it. */
+
+.dial {
+  max-width: 44rem;
+}
+
+.dial__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.dial__label {
+  font-family: var(--display);
+  font-size: var(--t-m);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.dial__value {
+  font-size: var(--t-m);
+  font-weight: 600;
+  color: var(--unknown);
+}
+
+.dial__track {
+  position: relative;
+  margin-top: var(--s-3);
+}
+
+.dial__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  margin: 0;
+  background: none;
+  cursor: pointer;
+  display: block;
+}
+
+.dial__input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: var(--radius-control);
+  background: linear-gradient(to right, var(--familiar), var(--unknown));
+}
+
+.dial__input::-moz-range-track {
+  height: 6px;
+  border-radius: var(--radius-control);
+  background: linear-gradient(to right, var(--familiar), var(--unknown));
+}
+
+.dial__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+.dial__input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--ink);
+}
+
+.dial__input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Where this listener's own lambda falls. A notch below the track, not a second thumb,
+   so it never looks draggable. */
+.dial__ghost {
+  position: absolute;
+  bottom: -2px;
+  width: 2px;
+  height: 11px;
+  margin-left: -1px;
+  background: var(--ink-soft);
+  transition: left var(--motion);
+}
+
+.dial__ends {
+  display: flex;
+  justify-content: space-between;
+  color: var(--mid);
+  font-size: var(--t-xs);
+  margin-top: var(--s-2);
+}
+
+.dial__note {
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+  margin-top: var(--s-3);
+}

@@ -1,0 +1,94 @@
+/* Detour design tokens. See web/DESIGN.md for the reasoning behind each choice.
+   Every later UI change must stay consistent with that document. */
+
+:root {
+  /* Palette. Diverging because the data is diverging: familiar at one end,
+     unknown at the other. Ink is the darkest value of the teal family, so body
+     text and the "familiar" data colour belong to one hue. */
+  --paper: #eef1f3;
+  --surface: #f7f9fa;
+  --surface-sunk: #e4e9ec;
+  --ink: #16222b;
+  --ink-soft: #3d4f5a;
+  --mid: #6b7d87;
+  --rule: #cdd6db;
+
+  --familiar: #0f6e72;
+  --familiar-wash: #d6e6e6;
+  --unknown: #c2365b;
+  --unknown-wash: #f4dae1;
+
+  --focus: #0b5cc4;
+
+  /* Type. Bricolage Grotesque carries the personality; Instrument Sans does the
+     reading and the numbers. Tabular figures so values do not jitter. */
+  --display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --body: "Instrument Sans", system-ui, -apple-system, sans-serif;
+
+  /* Modular scale, base 16px, ratio 1.25. */
+  --t-xs: 0.8rem;
+  --t-s: 0.9rem;
+  --t-base: 1rem;
+  --t-m: 1.25rem;
+  --t-l: 1.5625rem;
+  --t-xl: 1.953rem;
+  --t-xxl: 2.441rem;
+
+  /* Spacing, 4px base. */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+
+  --radius: 3px;
+  --radius-control: 999px;
+  --measure: 68ch;
+
+  --motion: 240ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101a20;
+    --surface: #17242c;
+    --surface-sunk: #0b1317;
+    --ink: #e8eef1;
+    --ink-soft: #b4c3cb;
+    --mid: #8c9ca5;
+    --rule: #2b3b45;
+
+    --familiar: #4fc3c6;
+    --familiar-wash: #16383a;
+    --unknown: #ff8098;
+    --unknown-wash: #3d1b25;
+
+    --focus: #7fb4ff;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #101a20;
+  --surface: #17242c;
+  --surface-sunk: #0b1317;
+  --ink: #e8eef1;
+  --ink-soft: #b4c3cb;
+  --mid: #8c9ca5;
+  --rule: #2b3b45;
+
+  --familiar: #4fc3c6;
+  --familiar-wash: #16383a;
+  --unknown: #ff8098;
+  --unknown-wash: #3d1b25;
+
+  --focus: #7fb4ff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion: 1ms linear;
+  }
+}

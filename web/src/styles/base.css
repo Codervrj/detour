@@ -1,0 +1,237 @@
+/* Base layer: resets, page frame, nav, and the shared primitives.
+   Component-specific rules live beside their components. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: var(--t-base);
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--t-xxl);
+}
+h2 {
+  font-size: var(--t-l);
+}
+h3 {
+  font-size: var(--t-m);
+}
+
+p {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+:where(a) {
+  color: var(--familiar);
+  text-underline-offset: 0.2em;
+}
+
+:where(:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* Page frame -------------------------------------------------------------- */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 68rem;
+  margin: 0 auto;
+  padding-inline: 16px;
+}
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.masthead__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-5);
+  padding-block: var(--s-4);
+}
+
+.wordmark {
+  font-family: var(--display);
+  font-size: var(--t-m);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* The wordmark carries the idea: the second half steps away from the first. */
+.wordmark em {
+  font-style: normal;
+  color: var(--unknown);
+}
+
+.nav {
+  display: flex;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+
+.nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  padding-block: var(--s-1);
+  border-bottom: 2px solid transparent;
+  font-size: var(--t-s);
+}
+
+.nav a:hover {
+  color: var(--ink);
+}
+
+.nav a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom-color: var(--unknown);
+}
+
+main {
+  flex: 1;
+  padding-block: var(--s-6) var(--s-8);
+}
+
+.page-foot {
+  border-top: 1px solid var(--rule);
+  color: var(--mid);
+  font-size: var(--t-xs);
+  padding-block: var(--s-5);
+}
+
+/* Primitives -------------------------------------------------------------- */
+
+.lede {
+  color: var(--ink-soft);
+  font-size: var(--t-m);
+  max-width: 48ch;
+  margin-top: var(--s-3);
+}
+
+.section {
+  margin-top: var(--s-7);
+}
+
+.section__head {
+  margin-bottom: var(--s-4);
+}
+
+.button {
+  font: inherit;
+  font-size: var(--t-s);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  padding: var(--s-2) var(--s-4);
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--ink-soft);
+}
+
+.button--quiet {
+  background: none;
+  border-color: transparent;
+  color: var(--familiar);
+  padding-inline: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* States ------------------------------------------------------------------ */
+
+.state {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--mid);
+  background: var(--surface);
+  padding: var(--s-4) var(--s-5);
+  max-width: var(--measure);
+}
+
+.state--error {
+  border-left-color: var(--unknown);
+}
+
+.state h3 {
+  font-size: var(--t-base);
+  margin-bottom: var(--s-2);
+}
+
+.state p {
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+}
+
+.state code {
+  background: var(--surface-sunk);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius);
+  font-size: 0.95em;
+}
+
+.skeleton {
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
+  height: 1rem;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

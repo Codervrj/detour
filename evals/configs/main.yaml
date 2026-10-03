@@ -1,0 +1,43 @@
+# Full eval on the val split. Never point this at test without an explicit request.
+name: main
+data:
+  source: processed
+  processed_dir: data/processed
+split:
+  train_months: 9
+  val_months: 1
+  test_months: 2
+filters:
+  min_user_listens: 50
+  unit: artist_mbid   # the map's unit of analysis
+  min_item_listeners: 5
+eval:
+  split: val
+  k_values: [10, 20]
+  seeds: [13, 17, 23]
+  bootstrap_resamples: 1000
+explorer_score:
+  smoothing_months: 3
+  clip: [0.0, 1.0]
+als:
+  factors: 128
+  alpha: 40.0
+  regularization: 0.05
+  iterations: 20
+  candidates: 200
+rerank:
+  beta: 0.3
+  anchor_min: 4
+  lambda_grid: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+personalized_lambda:
+  lam_min: 0.1
+  lam_max: 0.8
+  gamma: 1.0
+item2vec:
+  dimensions: 128
+  window: 10
+  min_count: 5
+  epochs: 5
+sessions:
+  gap_minutes: 30
+  min_length: 2

@@ -1,0 +1,80 @@
+/* Results tables and the verdict block. Tables are plain rules, no zebra fills. */
+
+.verdict {
+  max-width: var(--measure);
+  display: grid;
+  gap: var(--s-3);
+}
+
+.verdict strong.is-up {
+  color: var(--familiar);
+}
+
+.verdict strong.is-down {
+  color: var(--unknown);
+}
+
+.verdict__caveat {
+  border-left: 3px solid var(--unknown);
+  background: var(--surface);
+  padding: var(--s-3) var(--s-4);
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 36rem;
+  font-size: var(--t-s);
+}
+
+.data-table th,
+.data-table td {
+  text-align: right;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.data-table thead th {
+  color: var(--mid);
+  font-weight: 500;
+  border-bottom-color: var(--ink-soft);
+}
+
+.data-table th[scope="row"],
+.data-table thead th:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.data-table tr.is-ours th,
+.data-table tr.is-ours td {
+  background: var(--surface);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--unknown);
+}
+
+.provenance {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--s-2) var(--s-5);
+  margin: 0;
+  font-size: var(--t-s);
+  max-width: var(--measure);
+}
+
+.provenance dt {
+  color: var(--mid);
+}
+
+.provenance dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,43 @@
+# Fast eval on fixture data. Must finish in under a minute.
+name: smoke
+data:
+  source: fixtures
+  processed_dir: data/processed
+split:
+  train_months: 9
+  val_months: 1
+  test_months: 2
+filters:
+  min_user_listens: 5      # relaxed for the tiny fixture set
+  unit: artist_mbid   # the map's unit of analysis
+  min_item_listeners: 2
+eval:
+  split: val
+  k_values: [10, 20]
+  seeds: [13]
+  bootstrap_resamples: 0   # CIs are a later increment
+explorer_score:
+  smoothing_months: 3
+  clip: [0.0, 1.0]
+als:
+  factors: 16
+  alpha: 40.0
+  regularization: 0.05
+  iterations: 10
+  candidates: 200
+rerank:
+  beta: 0.3
+  anchor_min: 4
+  lambda_grid: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+personalized_lambda:
+  lam_min: 0.1
+  lam_max: 0.8
+  gamma: 1.0
+item2vec:
+  dimensions: 32
+  window: 10
+  min_count: 2
+  epochs: 2
+sessions:
+  gap_minutes: 30
+  min_length: 2

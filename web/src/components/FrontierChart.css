@@ -1,0 +1,92 @@
+/* The frontier chart. Stroke and fill come from the tokens so it reads correctly in
+   both themes without a second palette. */
+
+.frontier {
+  margin: 0;
+}
+
+.frontier__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.frontier__grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.frontier__axis {
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+}
+
+.frontier__tick {
+  fill: var(--mid);
+  font-family: var(--body);
+  font-size: 12px;
+}
+
+.frontier__tick--y {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.frontier__tick--x {
+  text-anchor: middle;
+}
+
+.frontier__curve {
+  fill: none;
+  stroke: var(--mid);
+  stroke-width: 1.75;
+  stroke-dasharray: 5 4;
+}
+
+.frontier__dot {
+  fill: var(--surface);
+  stroke: var(--ink-soft);
+  stroke-width: 1.75;
+}
+
+.frontier__dot-label {
+  fill: var(--mid);
+  font-family: var(--body);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.frontier__drop {
+  stroke: var(--unknown);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.6;
+}
+
+.frontier__ours {
+  fill: var(--unknown);
+  stroke: var(--paper);
+  stroke-width: 2.5;
+}
+
+.frontier__ours-label {
+  fill: var(--unknown);
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.frontier__axis-title {
+  fill: var(--ink-soft);
+  font-family: var(--body);
+  font-size: 12.5px;
+  text-anchor: middle;
+}
+
+.frontier figcaption {
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+  max-width: 62ch;
+  margin-top: var(--s-3);
+}
