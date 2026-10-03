@@ -41,3 +41,6 @@ item2vec:
 sessions:
   gap_minutes: 30
   min_length: 2
+map:
+  model: ppmi_svd
+  dimensions: 128

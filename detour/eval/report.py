@@ -263,16 +263,21 @@ def latest() -> dict[str, Any] | None:
 MAP_MODEL_LABELS = {
     "random": "random",
     "popularity": "popularity only",
-    "ppmi_svd": "PPMI + SVD",
     "als": "ALS factors",
-    "item2vec": "item2vec (ours)",
+    "item2vec": "item2vec",
+    "ppmi_svd": "PPMI + SVD (ours)",
 }
+
+# In a popularity-only space the popularity-matched negatives are, by construction, at the
+# same place as the target, so the control returns 1.0 and means nothing. Reporting it as a
+# score would be misleading.
+NO_MATCHED_CONTROL = {"popularity"}
 
 
 def map_verdict(payload: dict[str, Any]) -> list[str]:
     """State plainly whether the map beat chance and, more importantly, popularity."""
     models = payload["models"]
-    ours = models.get("item2vec", {})
+    ours = models.get("ppmi_svd", {})
     popularity = models.get("popularity", {})
 
     lines = ["### Did the map learn anything?", ""]
@@ -285,7 +290,7 @@ def map_verdict(payload: dict[str, Any]) -> list[str]:
         return lines
 
     lines.append(
-        f"- Adoption rank percentile for item2vec: **{percentile:.4f}** "
+        f"- Adoption rank percentile for the map: **{percentile:.4f}** "
         f"(0.5 is chance, lower is better)."
     )
     if pop_percentile is not None:
@@ -323,7 +328,12 @@ def map_table(payload: dict[str, Any]) -> list[str]:
         model = payload["models"].get(name)
         if not model:
             continue
-        row = " | ".join(fmt(model.get(column)) for column in columns)
+        row = " | ".join(
+            "not meaningful"
+            if column == "matched_percentile" and name in NO_MATCHED_CONTROL
+            else fmt(model.get(column))
+            for column in columns
+        )
         lines.append(f"| {label} | {row} |")
     lines.append("")
     return lines

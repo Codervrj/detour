@@ -7,39 +7,72 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
-class ListenerSummary(BaseModel):
-    """A sample listener as the picker shows them."""
+class ArtistPoint(BaseModel):
+    """One artist as drawn on the map."""
 
-    user_id: str
-    explorer_score: float = Field(ge=0.0, le=1.0)
-    personalised_lambda: float = Field(ge=0.0, le=1.0)
-    train_listens: int
-    top_artists: list[str]
-
-
-class TrackRecommendation(BaseModel):
-    """One row of the re-ranked list, with the numbers the UI puts beside it."""
-
-    item_id: str
-    rank: int
-    relevance: float
-    novelty: float
-    is_anchor: bool
-    artist_name: str
-    track_name: str
-    why: str
+    artist_mbid: str
+    name: str
+    plays: int
+    x: float
+    y: float
 
 
-class RecommendationsResponse(BaseModel):
-    """A finished list plus the dial position that produced it."""
+class MapResponse(BaseModel):
+    """The artist map itself, for the background layer."""
 
-    user_id: str
-    explorer_score: float
-    personalised_lambda: float
-    lambda_used: float
-    k: int
-    anchor_count: int
-    items: list[TrackRecommendation]
+    artists: list[ArtistPoint]
+    total_artists: int
+    showing: int
+
+
+class Coverage(BaseModel):
+    """How much of a listener's history the map could actually read."""
+
+    matched_artists: int
+    unmatched_artists: int
+    artist_coverage: float = Field(ge=0.0, le=1.0)
+    play_coverage: float = Field(ge=0.0, le=1.0)
+    biggest_misses: list[str]
+
+
+class IslandOut(BaseModel):
+    """One cluster of a listener's taste."""
+
+    label: str
+    size: int
+    plays: int
+    isolation: float
+    artists: list[ArtistPoint]
+
+
+class NeighbourOut(BaseModel):
+    """An artist near something, with how near."""
+
+    artist_mbid: str
+    name: str
+    similarity: float
+    x: float
+    y: float
+
+
+class ListenerMap(BaseModel):
+    """Where one listener sits, and what that says about them."""
+
+    listener: str
+    coverage: Coverage
+    total_plays: int
+    artists: list[ArtistPoint]
+    islands: list[IslandOut]
+    edges: list[ArtistPoint]
+    frontier: list[NeighbourOut]
+
+
+class ArtistNeighbours(BaseModel):
+    """One artist and who sits next to it."""
+
+    artist_mbid: str
+    name: str
+    neighbours: list[NeighbourOut]
 
 
 class ReportResponse(BaseModel):
@@ -49,8 +82,9 @@ class ReportResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    """Whether the artefacts loaded and how much they contain."""
+    """Whether the map loaded, and how big it is."""
 
     status: str
-    listeners: int
+    artists: int
     has_report: bool
+    has_coordinates: bool

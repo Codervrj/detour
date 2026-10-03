@@ -18,6 +18,7 @@ from typing import Any
 
 import numpy as np
 import polars as pl
+from gensim.models import KeyedVectors
 
 from detour.config import load_config
 from detour.eval import report as report_writer
@@ -26,11 +27,10 @@ from detour.foldin import place
 from detour.models.baselines import (
     als_vectors,
     artist_plays,
-    ppmi_svd_vectors,
     random_vectors,
 )
 
-MODEL_ORDER = ["random", "popularity", "ppmi_svd", "als", "item2vec"]
+MODEL_ORDER = ["random", "popularity", "als", "item2vec", "ppmi_svd"]
 
 
 def listener_artists(frame: pl.DataFrame) -> dict[str, dict[str, int]]:
@@ -77,30 +77,38 @@ def build_spaces(
 ) -> tuple[dict[str, dict[str, np.ndarray]], dict[str, int]]:
     """Artist vectors for every model, plus the play counts used by the control."""
     plays = artist_plays(train)
+
+    # The map itself, as trained by detour.models.artist_map.
     vectors = pl.read_parquet("artifacts/artist_vectors.parquet")
-    item2vec = {
+    ours = {
         str(row["artist_mbid"]): np.asarray(row["vector"], dtype=np.float64)
         for row in vectors.iter_rows(named=True)
     }
     # Every model is restricted to the same vocabulary, so the comparison is like for like.
-    vocabulary = sorted(item2vec)
-    dimensions = config["item2vec"]["dimensions"]
+    vocabulary = sorted(ours)
+    dimensions = config["map"]["dimensions"]
 
     print("building baselines")
     spaces: dict[str, dict[str, np.ndarray]] = {
-        "item2vec": item2vec,
+        "ppmi_svd": ours,
         "random": random_vectors(vocabulary, dimensions, seed),
         "popularity": popularity_vectors(plays, vocabulary),
     }
 
+    item2vec_path = Path("artifacts/item2vec.kv")
+    if item2vec_path.exists():
+        print("  item2vec")
+        word_vectors = KeyedVectors.load(str(item2vec_path))
+        spaces["item2vec"] = {
+            artist: np.asarray(word_vectors[artist], dtype=np.float64)
+            for artist in word_vectors.index_to_key
+            if artist in ours
+        }
+
+    print("  als")
     restricted = train.filter(pl.col("artist_mbid").is_in(vocabulary))
-    for name, builder in (
-        ("ppmi_svd", lambda: ppmi_svd_vectors(restricted, dimensions)),
-        ("als", lambda: als_vectors(restricted, dimensions, seed)),
-    ):
-        print(f"  {name}")
-        built = builder()  # type: ignore[no-untyped-call]
-        spaces[name] = {a: v for a, v in built.items() if a in item2vec}
+    built = als_vectors(restricted, dimensions, seed)
+    spaces["als"] = {a: v for a, v in built.items() if a in ours}
 
     return spaces, plays
 
