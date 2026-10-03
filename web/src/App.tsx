@@ -8,13 +8,13 @@ import { useEffect, useState } from "react";
 import { MapScreen } from "./screens/Map";
 import { Islands } from "./screens/Islands";
 import { Results } from "./screens/Results";
-import { Method } from "./screens/Method";
+// import { Method } from "./screens/Method";
 
 const ROUTES = [
   { hash: "#/map", label: "Your map", element: <MapScreen /> },
   { hash: "#/islands", label: "Islands", element: <Islands /> },
   { hash: "#/results", label: "Results", element: <Results /> },
-  { hash: "#/method", label: "Method", element: <Method /> },
+  // { hash: "#/method", label: "Method", element: <Method /> },
 ] as const;
 
 function currentHash(): string {

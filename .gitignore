@@ -1,3 +1,4 @@
+.hypothesis/
 data/
 artifacts/
 .env
