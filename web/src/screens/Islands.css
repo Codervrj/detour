@@ -1,0 +1,88 @@
+/* Islands: one block per cluster, no cards. */
+
+.islands {
+  list-style: none;
+  margin: var(--s-6) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-6);
+}
+
+.island {
+  border-top: 2px solid var(--ink);
+  padding-top: var(--s-3);
+  max-width: var(--measure);
+}
+
+.island__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+
+.island h2 {
+  font-size: var(--t-m);
+}
+
+.island__meta {
+  color: var(--mid);
+  font-size: var(--t-s);
+}
+
+.island__isolation {
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+  margin-top: var(--s-2);
+  display: grid;
+  gap: var(--s-2);
+}
+
+.island__gauge {
+  display: block;
+  block-size: 0.35rem;
+  background: var(--unknown);
+  border-radius: var(--radius);
+  min-inline-size: 4px;
+  max-inline-size: 100%;
+}
+
+.island__artists {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.island__artists li {
+  font-size: var(--t-s);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  padding: 0.15em 0.7em;
+}
+
+.island__artists span,
+.edges span {
+  color: var(--mid);
+}
+
+.edges {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: var(--measure);
+  border-top: 1px solid var(--rule);
+}
+
+.edges li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--t-s);
+}

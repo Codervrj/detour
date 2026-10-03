@@ -1,0 +1,99 @@
+/* Map screen. Quiet around the map itself. */
+
+.notice {
+  border-left: 3px solid var(--familiar);
+  background: var(--surface);
+  padding: var(--s-3) var(--s-4);
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+  max-width: var(--measure);
+  margin-bottom: var(--s-4);
+}
+
+.picker-label {
+  display: block;
+  font-size: var(--t-xs);
+  color: var(--mid);
+  margin-bottom: var(--s-1);
+}
+
+.select {
+  font: inherit;
+  font-size: var(--t-s);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  min-width: 12rem;
+}
+
+.map-foot {
+  color: var(--mid);
+  font-size: var(--t-xs);
+  margin-top: var(--s-3);
+  max-width: var(--measure);
+}
+
+.note {
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+  max-width: var(--measure);
+  margin-bottom: var(--s-4);
+}
+
+/* Neighbour lists: name, a bar for the number, the number itself. */
+.near {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 44rem;
+  border-top: 1px solid var(--rule);
+}
+
+.near li {
+  display: grid;
+  grid-template-columns: minmax(8rem, 16rem) 1fr 3.5rem;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--t-s);
+}
+
+.near__name {
+  overflow-wrap: anywhere;
+}
+
+.near__bar {
+  display: block;
+  block-size: 0.5rem;
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
+}
+
+.near__bar > span {
+  display: block;
+  block-size: 100%;
+  background: var(--familiar);
+  border-radius: var(--radius);
+}
+
+.near__bar > span.is-unknown {
+  background: var(--unknown);
+}
+
+.near__score {
+  text-align: right;
+  color: var(--mid);
+}
+
+@media (max-width: 34rem) {
+  .near li {
+    grid-template-columns: 1fr 3.5rem;
+  }
+
+  .near__bar {
+    grid-column: 1 / -1;
+  }
+}

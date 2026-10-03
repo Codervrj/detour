@@ -202,79 +202,63 @@ not just in a file.
 
 ---
 
-## Increments
+## Increments — all complete
 
-Each ends with a validation you can see. Do not start the next until the current passes.
+| # | Increment | Outcome |
+|---|---|---|
+| 1 | Data access spike | **Done.** MLHD+ chosen after measuring the alternatives; see the risk gate above. |
+| 2 | Ingest and sample | **Done.** 14,840,991 plays, 2,000 listeners, 100,017 artists, calendar 2011. |
+| 3 | Clean and split at real scale | **Done.** 29s and 10s respectively. Train 10.2M / val 1.14M / test 2.22M. |
+| 4 | Sessions and embeddings | **Done**, and the eyeball check changed the project — see below. |
+| 5 | Fold-in and clustering | **Done.** Log-weighted fold-in, KMeans islands with k by silhouette. |
+| 6 | Evaluation | **Done.** Adoption percentile, Hit@K, median rank, five models, popularity-matched control. |
+| 7 | Bring your own history | **Done.** Last.fm import plus two-pass name resolution with coverage reporting. |
+| 8 | The map UI | **Done.** Canvas map, islands, results, method. 360px clean, 17 frontend tests. |
+| 9 | Honest write-up | **Done.** Results and Method both state that the first model choice lost. |
 
-### 1 — Data access spike *(decision gate)*
-Establish that real ListenBrainz data can actually be fetched here. Try the monthly dumps first
-(no account), BigQuery second. Resolve the TLS interception properly rather than disabling
-verification. Pull one small slice and read it.
+### What the evaluation found
 
-**Validate:** a real Parquet file in `data/raw/` with genuine MBIDs and timestamps, plus a written
-note on route, size and time taken. **If this fails, stop and report — do not continue on fake
-data.**
+| model | adoption percentile | matched control | hit@10 |
+|---|---|---|---|
+| random | 0.4965 | 0.4962 | 0.0003 |
+| popularity only | 0.5115 | not meaningful | 0.0004 |
+| ALS factors | 0.3935 | 0.3793 | 0.0153 |
+| item2vec | 0.2891 | 0.2282 | 0.0039 |
+| **PPMI + SVD** | **0.1158** | **0.1880** | **0.0288** |
 
-### 2 — Ingest and sample
-`detour/ingest/dumps_loader.py` for real. Sample to roughly 5,000–10,000 active listeners over 12
-consecutive months per `CLAUDE.md` §1, written to Parquet with the JSON sidecar.
+Three things worth keeping:
 
-**Validate:** sidecar shows real row counts and date range; listener and artist counts are
-plausible; re-running the sample with the same seed gives the same set.
+1. **Random scored 0.4965 against a theoretical 0.5.** That sanity check passing is what
+   makes every other number here worth reading.
+2. **The neural model lost.** item2vec was the plan's choice and scored 0.2891; counting
+   co-listening and taking an SVD scored 0.1158 with seven times the hit@10. The simple
+   method became the map and item2vec was demoted to a baseline. The likely reason is that
+   the two learn different relations: item2vec learns "played in the same sitting", and with
+   a median session of four tracks there is barely any context; PPMI learns "shares listeners
+   across nine months", which is a far better guide to what somebody adopts next.
+3. **The popularity control held.** 0.1880 against chance, so the ranking is not the charts
+   wearing a disguise.
 
-### 3 — Clean and split at real scale
-Reuse `detour/clean/run.py` and `detour/split.py` **unchanged** — they are already correct and
-tested. Confirm they hold at a hundred times the data.
+### Changes made against the plan, and why
 
-**Validate:** existing dedupe, split-leakage and train-only-filter tests still pass; stage
-completes in reasonable time and memory; sidecars look sane.
+- **Filter unit.** The plan reused `split.py` unchanged, but its item filter counted
+  *recording* listeners while the map's unit is the *artist*. That collapsed the catalogue
+  from 100,017 artists to 13,931. The filter column is now configurable and set to
+  `artist_mbid`, recovering 8,000 artists and 2.2M plays.
+- **Resumable HTTP.** Long transfers from the MetaBrainz mirror are cut on this network
+  (`tarfile.ReadError` after ~2 GB; curl exit 56). `detour/ingest/resumable.py` tracks its
+  byte position and reconnects with a `Range` header, verified against a forced socket kill.
+- **Frontier anchor.** First built from the listener's *edge* artists. Edges are obscure
+  outliers, so it returned obscure artists near other obscure artists. It now ranks from the
+  listener's centre, which is the ranking the evaluation actually scored.
+- **`truststore` not needed.** TLS interception did not block the data sources.
 
-### 4 — Sessions and embeddings
-`detour/features/sessions.py` (30-minute gap) and `detour/models/item2vec.py` for real, plus the
-PPMI+SVD baseline. Reuse `als.py` for its factors.
+### Still outstanding
 
-**Validate:** nearest neighbours of a few well-known artists are inspected by hand. If the
-neighbours of a famous metal band are not other metal bands, the embedding is wrong and no metric
-will save it. This eyeball check comes before any number.
-
-### 5 — Fold-in and clustering
-Place an unseen listener from their history. Cluster their artists into islands.
-
-**Validate:** property tests — fold-in of a listener who plays exactly one artist lands on that
-artist; adding plays of an artist moves the position toward it; islands are stable across seeds.
-
-### 6 — Evaluation
-`detour/eval/` re-pointed: adoption rank percentile, Hit@K, median rank, cluster hit rate, all
-baselines, bootstrap CIs, **and the popularity-matched negative control**. Report JSON and
-Markdown as now.
-
-**Validate:** golden tests with hand-computed arithmetic for each metric; two runs at one seed are
-identical; a deliberately shuffled embedding scores at chance (0.5) — if it does not, the metric
-is broken.
-
-### 7 — Bring your own history
-CSV import plus a real demo listener, then Last.fm or Spotify once chosen. Artist name resolution
-to the trained vocabulary, with coverage reported honestly ("recognised 847 of your 1,021
-artists") rather than silently dropping the rest.
-
-**Validate:** API contract tests; a known CSV resolves to the expected artists; unmatched names
-are surfaced, never hidden.
-
-### 8 — The map UI
-`web/` rebuilt on the existing design system. Canvas or WebGL for the map, since thousands of
-points will not survive as SVG DOM nodes. Keyboard access and a non-visual route to the same
-information — a map must not be the only way to read the data.
-
-**Validate:** `pnpm typecheck && pnpm test`; Playwright screenshots at 360px and desktop critiqued
-against `web/DESIGN.md`; axe scan clean; the whole flow usable by keyboard.
-
-### 9 — Honest write-up
-Results and Method pages reflecting what was actually found, including the popularity control's
-verdict and anything that failed.
-
-**Validate:** every claim on the Results page traceable to a number in the report JSON.
-
----
+- Bootstrap confidence intervals (`detour/eval/bootstrap.py` is still a stub).
+- Segment breakdowns by listener activity.
+- The test split, untouched by design, to be run once when asked.
+- `CLAUDE.md` still describes the v1 recommender and contradicts this plan.
 
 ## What survives from v1
 

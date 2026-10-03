@@ -80,8 +80,14 @@ class MapService:
         return set(self.index)
 
     def name_of(self, artist_mbid: str) -> str:
-        """A display name, falling back to the id when MusicBrainz has no name for it."""
-        return self.names.get(artist_mbid, artist_mbid[:8])
+        """A display name, or an honest placeholder.
+
+        About one artist in nine has no name: they are 2011-era ids that MusicBrainz has
+        since merged away. Saying so beats printing a bare hex fragment that looks like a
+        band nobody has heard of.
+        """
+        name = self.names.get(artist_mbid)
+        return name if name else f"Unnamed artist ({artist_mbid[:8]})"
 
     def position_of(self, artist_mbid: str) -> tuple[float, float]:
         return self.coords.get(artist_mbid, (0.0, 0.0))

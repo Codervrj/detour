@@ -1,0 +1,22 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: "#/map"
+        - text: De
+        - emphasis [ref=e7]: tour
+      - navigation "Main" [ref=e8]:
+        - link "Your map" [ref=e9] [cursor=pointer]:
+          - /url: "#/map"
+        - link "Islands" [ref=e10] [cursor=pointer]:
+          - /url: "#/islands"
+        - link "Results" [ref=e11] [cursor=pointer]:
+          - /url: "#/results"
+        - link "Method" [ref=e12] [cursor=pointer]:
+          - /url: "#/method"
+  - main [ref=e13]:
+    - generic [ref=e126]:
+      - heading "Results" [level=1] [ref=e127]
+      - generic [ref=e128]: Loading the latest report
+  - contentinfo [ref=e27]:
+    - generic [ref=e28]: Built on the ListenBrainz data model from the MetaBrainz Foundation, with metadata from MusicBrainz. Listening histories from MLHD+, artist names from MusicBrainz.

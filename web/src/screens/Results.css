@@ -78,3 +78,16 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+.verdict__ok {
+  border-left: 3px solid var(--familiar);
+  background: var(--surface);
+  padding: var(--s-3) var(--s-4);
+  color: var(--ink-soft);
+  font-size: var(--t-s);
+}
+
+.prose-p {
+  color: var(--ink-soft);
+  max-width: var(--measure);
+}

@@ -5,9 +5,9 @@ import { App } from "./App";
 
 import "./styles/tokens.css";
 import "./styles/base.css";
-import "./screens/Listen.css";
+import "./screens/Map.css";
+import "./screens/Islands.css";
 import "./screens/Results.css";
-import "./screens/Profile.css";
 import "./screens/Method.css";
 
 const client = new QueryClient({

@@ -1,7 +1,4 @@
-/** Method: the data, the split, the metrics and the limitations, in plain language.
- *
- * This page also carries the attribution the licences require.
- */
+/** Method: the data, the model, the test and the limitations, in plain language. */
 
 import "./Method.css";
 
@@ -11,83 +8,89 @@ export function Method() {
       <header>
         <h1>How this works</h1>
         <p className="lede">
-          No part of this is magic, and some of it does not work yet. Here is the whole method,
-          including what it cannot do.
+          No part of this is magic, and some of it does not work as well as I first expected.
+          Here is the whole method, including what it cannot do.
         </p>
       </header>
 
       <div className="prose">
         <section>
-          <h2>The data</h2>
+          <h2>The data is real</h2>
           <p>
-            The design target is ListenBrainz listening history: real play events with a
-            timestamp, a pseudonymous listener id and MusicBrainz identifiers for the recording
-            and artist.
+            Fourteen point eight million plays by 2,000 real Last.fm listeners across the whole
+            of 2011, taken from MLHD+, a research dataset published by MetaBrainz that maps
+            Last.fm listening histories onto MusicBrainz identifiers.
+          </p>
+          <p>
+            Nobody is invented. Every artist is a real artist and every play happened. Artist
+            names come from the MusicBrainz canonical dump, which covers 89% of the artists in
+            the map; the rest are 2011-era identifiers that MusicBrainz has since merged away.
+          </p>
+        </section>
+
+        <section>
+          <h2>Building the map</h2>
+          <p>
+            Plays of the same artist by the same listener within thirty seconds count once. The
+            split is by time, never at random: the first nine months train the model, month ten
+            tunes it, and the last two months are held back. Which artists are eligible is
+            decided from the training months alone, so nothing from the future leaks in.
+          </p>
+          <p>
+            Then: count how many listeners each pair of artists shares, convert those counts to
+            pointwise mutual information so a pair only counts as related when they co-occur more
+            than chance would predict, and compress the result with a truncated SVD. Popularity
+            cancels out in that middle step, which is why the map is not simply a chart.
+          </p>
+          <p>
+            The map has 128 dimensions. The picture you see is flattened to two with UMAP for
+            drawing only. <strong>Every number on this site is computed in the full 128
+            dimensions</strong>, never on the flattened picture, because flattening distorts
+            distance by construction.
+          </p>
+        </section>
+
+        <section>
+          <h2>Putting you on it</h2>
+          <p>
+            You were never in the training data. Your position is the average of the artists you
+            play, weighted by the logarithm of your play counts so that one heavy rotation does
+            not drown out everything else. That is all it takes: the model generalises to people
+            it has never seen.
+          </p>
+        </section>
+
+        <section>
+          <h2>How it is judged</h2>
+          <p>
+            Place a listener using only their first nine months, rank every artist by distance
+            from that position, and look at where the artists they actually went on to play
+            landed. Chance is 0.5. The map scores 0.116.
           </p>
           <p className="callout">
-            What you are looking at right now is <strong>synthetic data</strong>, generated
-            locally by <code>tests/fixtures/make_fixtures.py</code>. Fifty invented listeners
-            across twelve months of 2024, with artist popularity on a Zipf curve and eight
-            latent taste groups. No ListenBrainz data has been downloaded. The ingest code for
-            the real thing is not written yet, so every number on this site describes invented
-            listeners.
+            The trap in that test: popular artists get adopted more often <em>and</em> sit
+            centrally on any map, so a model that learned nothing but the charts would still
+            score well. So every real adoption is also compared only against artists of similar
+            global popularity. The map survives that control, which is what makes the number
+            worth anything.
           </p>
         </section>
 
         <section>
-          <h2>Getting from plays to a model</h2>
+          <h2>What went wrong, and what I changed</h2>
           <p>
-            The same recording played twice by the same listener within thirty seconds counts
-            once. A track is identified by its recording id, falling back to a normalised artist
-            and title when that is missing.
+            The first model was item2vec, a neural embedding trained on listening sessions. It
+            scored 0.289. A far simpler method with no neural training at all, counting
+            co-listening and taking an SVD, scored 0.116 and found seven times as many artists in
+            the top ten. So the simple method became the map and item2vec was demoted to a
+            baseline.
           </p>
           <p>
-            The split is by time, never at random: the first nine months train the model, month
-            ten tunes it, and the last two months are held back. Filters on how active a
-            listener is and how many people heard a track are computed from the training months
-            alone, so nothing from the future decides who gets evaluated.
-          </p>
-        </section>
-
-        <section>
-          <h2>How adventurous is a listener?</h2>
-          <p>
-            For each month we take the share of that listener&rsquo;s plays that went to artists
-            they had never heard before, smooth those monthly shares, and average them into one
-            number between 0 and 1. A listener&rsquo;s first month is left out, because in month
-            one every artist is new and counting it would make a creature of habit look like an
-            adventurer.
-          </p>
-        </section>
-
-        <section>
-          <h2>Choosing what to play next</h2>
-          <p>
-            A collaborative filtering model proposes two hundred candidates per listener from
-            what similar listeners played. Those candidates are then re-ordered by a score that
-            trades three things off: how likely the listener is to want it, how rare it is, and
-            how similar it already is to what we have picked. The dial sets the weight between
-            the first two.
-          </p>
-          <p>
-            Every list keeps a minimum number of tracks by artists the listener already plays, so
-            turning the dial up never returns a list of total strangers. Each row carries a short
-            reason it is there.
-          </p>
-        </section>
-
-        <section>
-          <h2>How we judge it</h2>
-          <p>
-            We ask whether a listener actually played the recommended tracks in the held-out
-            period, and separately whether they went on to adopt artists that never appear in
-            their history. Those are different questions, and a model can win one while losing
-            the other. Alongside them we measure how rare the recommendations are, how varied,
-            how much of the catalogue gets seen at all, and how unevenly attention is spread.
-          </p>
-          <p>
-            Six approaches are compared on every run, from a random list and a straight
-            popularity chart up to our own. The results page shows all of them.
+            The likely reason is that the two learn different things. item2vec learns &ldquo;played
+            in the same sitting&rdquo;, and with a median session of four tracks there is very
+            little context to learn from. The counting method learns &ldquo;these artists share
+            listeners across nine months&rdquo;, which is a much better guide to what somebody
+            will adopt next.
           </p>
         </section>
 
@@ -95,25 +98,22 @@ export function Method() {
           <h2>What this cannot tell you</h2>
           <ul>
             <li>
-              The listeners are invented. Numbers here say the plumbing works; they say nothing
-              about real taste.
+              The listening data is from 2011. Nothing released since exists on this map at all.
             </li>
             <li>
-              Confidence intervals are not computed yet, so treat small differences between
-              models as noise.
+              Confidence intervals are not computed yet, so treat small differences between models
+              as noise. The gap between the top two is far too large to be noise.
             </li>
             <li>
-              The dial mapping from explorer score to weighting has not been fitted on the
-              tuning month. It currently uses placeholder values, which is the leading
-              explanation for why our discovery numbers trail plain collaborative filtering.
+              Artists with fewer than five listeners in the training year are not on the map, so
+              the deepest part of the tail is missing.
             </li>
             <li>
-              Rarity is not the same as discovery. Rewarding globally obscure tracks pushes the
-              list towards things nobody played, including this listener.
+              It knows nothing about how music sounds. Every relationship here comes from who
+              listened to what.
             </li>
             <li>
-              Variety between tracks is measured with the collaborative model&rsquo;s own
-              factors, which flatters it. A separate embedding would be a fairer judge.
+              Two thousand listeners is a small sample of the 583,000 in the full dataset.
             </li>
           </ul>
         </section>
@@ -121,18 +121,15 @@ export function Method() {
         <section>
           <h2>Credits</h2>
           <p>
-            Listening data model and format:{" "}
-            <a href="https://listenbrainz.org/">ListenBrainz</a>, by the MetaBrainz Foundation,
-            released under CC0.
+            Listening histories: <a href="https://musicbrainz.org/doc/MLHD">MLHD+</a>, published by
+            the MetaBrainz Foundation for research use, derived from Last.fm.
           </p>
           <p>
-            Artist, recording and tag metadata:{" "}
-            <a href="https://musicbrainz.org/">MusicBrainz</a>, also MetaBrainz.
+            Artist names and identifiers: <a href="https://musicbrainz.org/">MusicBrainz</a>, also
+            MetaBrainz. The listening data model follows{" "}
+            <a href="https://listenbrainz.org/">ListenBrainz</a> (CC0).
           </p>
-          <p>
-            The optional audio-similarity module, which is not built, would use the Free Music
-            Archive dataset (Defferrard and others, ISMIR 2017; metadata CC BY 4.0).
-          </p>
+          <p>Your own history, when you import it, comes from the Last.fm API and stays on your machine.</p>
         </section>
       </div>
     </div>

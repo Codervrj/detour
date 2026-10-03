@@ -5,14 +5,14 @@
  */
 
 import { useEffect, useState } from "react";
-import { Listen } from "./screens/Listen";
-import { Profile } from "./screens/Profile";
+import { MapScreen } from "./screens/Map";
+import { Islands } from "./screens/Islands";
 import { Results } from "./screens/Results";
 import { Method } from "./screens/Method";
 
 const ROUTES = [
-  { hash: "#/listen", label: "Listen", element: <Listen /> },
-  { hash: "#/listeners", label: "Listeners", element: <Profile /> },
+  { hash: "#/map", label: "Your map", element: <MapScreen /> },
+  { hash: "#/islands", label: "Islands", element: <Islands /> },
   { hash: "#/results", label: "Results", element: <Results /> },
   { hash: "#/method", label: "Method", element: <Method /> },
 ] as const;
@@ -59,7 +59,7 @@ export function App() {
       <footer className="page-foot">
         <div className="wrap">
           Built on the ListenBrainz data model from the MetaBrainz Foundation, with metadata from
-          MusicBrainz. The listeners shown here are synthetic.
+          MusicBrainz. Listening histories from MLHD+, artist names from MusicBrainz.
         </div>
       </footer>
     </div>

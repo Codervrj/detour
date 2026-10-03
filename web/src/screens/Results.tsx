@@ -1,34 +1,27 @@
-/** Results: what the eval actually found, including where it went against us.
+/** Results: does the map actually predict what people go on to listen to?
  *
- * Reads the latest report JSON. Numbers are shown as measured; the page does not hide a
- * baseline that beat us.
+ * Reports the numbers as measured, including the run where our first model choice lost.
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "../api/client";
-import { FrontierChart } from "../components/FrontierChart";
 import { ErrorState, LoadingRows } from "../components/States";
 import "./Results.css";
 
-const MODEL_LABELS: Record<string, string> = {
+const LABELS: Record<string, string> = {
   random: "random",
-  popularity: "popularity",
-  itemknn: "item-kNN",
-  als: "ALS",
-  als_mmr_fixed: "ALS with one global dial",
-  ours: "ALS with a dial per listener",
+  popularity: "popularity only",
+  als: "ALS factors",
+  item2vec: "item2vec",
+  ppmi_svd: "PPMI + SVD (the map)",
 };
 
-const METRICS = [
-  { key: "ndcg", label: "NDCG" },
-  { key: "discovery_recall", label: "discovery recall" },
-  { key: "novelty", label: "novelty" },
-  { key: "familiarity_anchor_rate", label: "familiar share" },
-  { key: "catalogue_coverage", label: "coverage" },
-];
+// In a popularity-only space the matched negatives sit on top of the target by
+// construction, so the control returns 1.0 and means nothing.
+const NO_CONTROL = new Set(["popularity"]);
 
-function num(value: unknown, digits = 4): string {
-  return typeof value === "number" ? value.toFixed(digits) : "not applicable";
+function num(value: number | null | undefined, digits = 4): string {
+  return typeof value === "number" ? value.toFixed(digits) : "n/a";
 }
 
 export function Results() {
@@ -38,7 +31,7 @@ export function Results() {
     return (
       <div className="wrap">
         <h1>Results</h1>
-        <LoadingRows label="Loading the latest eval report" />
+        <LoadingRows rows={5} label="Loading the latest report" />
       </div>
     );
   }
@@ -48,7 +41,7 @@ export function Results() {
     return (
       <div className="wrap">
         <h1>Results</h1>
-        <ErrorState title="No eval report yet" onRetry={() => report.refetch()}>
+        <ErrorState title="No report yet" onRetry={() => report.refetch()}>
           {error.status === 0 ? (
             <>
               The API is not running. Start it with <code>uv run python run.py demo</code>.
@@ -64,155 +57,101 @@ export function Results() {
   }
 
   const data = report.data;
-  const k = Math.max(...data.k_values);
-  const ours = data.models.ours;
-  const als = data.models.als;
-  const popularity = data.models.popularity;
+  const ours = data.models.ppmi_svd ?? {};
+  const random = data.models.random ?? {};
+  const percentile = ours.adoption_percentile;
+  const matched = ours.matched_percentile;
+  const chance = random.adoption_percentile;
 
-  const oursNdcg = ours?.[`ndcg@${k}`];
-  const oursNovelty = ours?.[`novelty@${k}`];
-  const oursDiscovery = ours?.[`discovery_recall@${k}`];
-  const alsDiscovery = als?.[`discovery_recall@${k}`];
-  const alsNdcg = als?.[`ndcg@${k}`];
-  const popNdcg = popularity?.[`ndcg@${k}`];
-
-  const discoveryDelta =
-    typeof oursDiscovery === "number" && typeof alsDiscovery === "number"
-      ? oursDiscovery - alsDiscovery
-      : null;
-  const ndcgDelta =
-    typeof oursNdcg === "number" && typeof alsNdcg === "number" ? oursNdcg - alsNdcg : null;
-
-  const segments = (ours?.[`segments@${k}`] ?? {}) as Record<string, Record<string, number>>;
+  const ranked = Object.keys(LABELS)
+    .filter((name) => data.models[name])
+    .map((name) => ({ name, scores: data.models[name] }));
+  const best = ranked.reduce<{ name: string; value: number } | null>((acc, row) => {
+    const value = row.scores.adoption_percentile;
+    if (typeof value !== "number") return acc;
+    return !acc || value < acc.value ? { name: row.name, value } : acc;
+  }, null);
 
   return (
     <div className="wrap">
       <header>
-        <h1>Results</h1>
+        <h1>Does the map work?</h1>
         <p className="lede">
-          One run on the {data.split} split, {data.users_evaluated} listeners. These are the
-          numbers as measured.
+          One run on the {data.split} split, {data.listeners_with_adoptions.toLocaleString()}{" "}
+          listeners who adopted a new artist. These are the numbers as measured.
         </p>
       </header>
 
+      <section className="section" aria-labelledby="test-heading">
+        <div className="section__head">
+          <h2 id="test-heading">The test</h2>
+        </div>
+        <p className="prose-p">
+          Each listener is placed on the map using only their first nine months. Every artist is
+          then ranked by distance from that position, and we check where the artists they really
+          went on to play in the following months landed. A score of 0.5 means the map is
+          worthless; lower is better.
+        </p>
+      </section>
+
       <section className="section" aria-labelledby="verdict-heading">
         <div className="section__head">
-          <h2 id="verdict-heading">Did it work?</h2>
+          <h2 id="verdict-heading">The answer</h2>
         </div>
         <div className="verdict">
           <p>
-            Against plain ALS, giving each listener their own dial position moved discovery
-            recall by{" "}
-            <strong className={discoveryDelta !== null && discoveryDelta < 0 ? "is-down" : "is-up"}>
-              {discoveryDelta === null
-                ? "an amount we cannot measure"
-                : `${discoveryDelta >= 0 ? "+" : ""}${discoveryDelta.toFixed(4)}`}
-            </strong>{" "}
-            and NDCG by{" "}
-            <strong className={ndcgDelta !== null && ndcgDelta < 0 ? "is-down" : "is-up"}>
-              {ndcgDelta === null
-                ? "an amount we cannot measure"
-                : `${ndcgDelta >= 0 ? "+" : ""}${ndcgDelta.toFixed(4)}`}
-            </strong>{" "}
-            at K={k}.
+            The map scores <strong className="is-up">{num(percentile)}</strong>, against{" "}
+            {num(chance)} for random placement. Real adoptions land far closer to a listener&rsquo;s
+            territory than chance allows.
           </p>
-          {discoveryDelta !== null && discoveryDelta < 0 && (
-            <p className="verdict__caveat">
-              Discovery recall went down, so on this run the headline claim does not hold. The
-              novelty term rewards globally rare tracks, which is not the same thing as the
-              artists a listener actually went on to adopt. The lambda mapping has not yet been
-              fitted on the validation split, which is the most likely cause.
+          {typeof matched === "number" && (
+            <p className={matched < 0.5 ? "verdict__ok" : "verdict__caveat"}>
+              Popularity-matched control: <strong>{num(matched)}</strong>.{" "}
+              {matched < 0.5
+                ? "The result survives. Each real adoption was compared only against artists of similar global popularity, so this is not the model having quietly learned the charts."
+                : "The result does not survive. The ranking is explained by popularity rather than taste, so the map has not been shown to work."}
             </p>
           )}
-          <p>
-            Against the popularity baseline on NDCG@{k}:{" "}
-            {typeof oursNdcg === "number" && typeof popNdcg === "number"
-              ? oursNdcg > popNdcg
-                ? `ahead, ${num(oursNdcg)} against ${num(popNdcg)}.`
-                : `behind, ${num(oursNdcg)} against ${num(popNdcg)}.`
-              : "not measurable on this run."}
-          </p>
+          {best && best.name !== "ppmi_svd" && (
+            <p className="verdict__caveat">
+              {LABELS[best.name]} scored better ({num(best.value)}). Reported as measured.
+            </p>
+          )}
         </div>
-      </section>
-
-      <section className="section" aria-labelledby="frontier-heading">
-        <div className="section__head">
-          <h2 id="frontier-heading">Accuracy against novelty</h2>
-        </div>
-        <FrontierChart
-          sweep={data.lambda_sweep}
-          ours={
-            typeof oursNdcg === "number" && typeof oursNovelty === "number"
-              ? { ndcg: oursNdcg, novelty: oursNovelty }
-              : null
-          }
-          k={k}
-        />
       </section>
 
       <section className="section" aria-labelledby="table-heading">
         <div className="section__head">
-          <h2 id="table-heading">Every model at K={k}</h2>
+          <h2 id="table-heading">Every model</h2>
         </div>
         <div className="table-scroll">
           <table className="data-table">
             <caption className="visually-hidden">
-              All baselines and our model, every metric at K={k}
+              All baselines and the map, on the adoption question
             </caption>
             <thead>
               <tr>
                 <th scope="col">model</th>
-                {METRICS.map((metric) => (
-                  <th scope="col" key={metric.key}>
-                    {metric.label}
+                <th scope="col">percentile</th>
+                <th scope="col">matched control</th>
+                <th scope="col">median rank</th>
+                {data.k_values.map((k) => (
+                  <th scope="col" key={k}>
+                    hit@{k}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {Object.keys(MODEL_LABELS)
-                .filter((name) => data.models[name])
-                .map((name) => (
-                  <tr key={name} className={name === "ours" ? "is-ours" : undefined}>
-                    <th scope="row">{MODEL_LABELS[name]}</th>
-                    {METRICS.map((metric) => (
-                      <td key={metric.key}>{num(data.models[name][`${metric.key}@${k}`])}</td>
-                    ))}
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="section" aria-labelledby="segment-heading">
-        <div className="section__head">
-          <h2 id="segment-heading">Our model by how adventurous listeners are</h2>
-        </div>
-        <div className="table-scroll">
-          <table className="data-table">
-            <caption className="visually-hidden">
-              Our model split by explorer tercile, and cold listeners separately
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">segment</th>
-                <th scope="col">listeners</th>
-                <th scope="col">NDCG</th>
-                <th scope="col">discovery recall</th>
-                <th scope="col">novelty</th>
-                <th scope="col">familiar share</th>
-              </tr>
-            </thead>
-            <tbody>
-              {["loyalists", "middle", "explorers", "cold"].map((name) => (
-                <tr key={name}>
-                  <th scope="row">{name}</th>
-                  <td>{segments[name]?.users ?? 0}</td>
-                  <td>{num(segments[name]?.[`ndcg@${k}`])}</td>
-                  <td>{num(segments[name]?.[`discovery_recall@${k}`])}</td>
-                  <td>{num(segments[name]?.[`novelty@${k}`])}</td>
-                  <td>{num(segments[name]?.[`familiarity_anchor_rate@${k}`])}</td>
+              {ranked.map(({ name, scores }) => (
+                <tr key={name} className={name === "ppmi_svd" ? "is-ours" : undefined}>
+                  <th scope="row">{LABELS[name]}</th>
+                  <td>{num(scores.adoption_percentile)}</td>
+                  <td>{NO_CONTROL.has(name) ? "not meaningful" : num(scores.matched_percentile)}</td>
+                  <td>{num(scores.median_rank, 0)}</td>
+                  {data.k_values.map((k) => (
+                    <td key={k}>{num(scores[`hit@${k}`])}</td>
+                  ))}
                 </tr>
               ))}
             </tbody>
@@ -220,9 +159,9 @@ export function Results() {
         </div>
       </section>
 
-      <section className="section" aria-labelledby="provenance-heading">
+      <section className="section" aria-labelledby="prov-heading">
         <div className="section__head">
-          <h2 id="provenance-heading">Where these numbers came from</h2>
+          <h2 id="prov-heading">Where these numbers came from</h2>
         </div>
         <dl className="provenance">
           <dt>run</dt>
@@ -231,6 +170,8 @@ export function Results() {
           <dd>{new Date(data.generated_at).toLocaleString()}</dd>
           <dt>split</dt>
           <dd>{data.split}</dd>
+          <dt>artists in the map</dt>
+          <dd>{data.vocabulary.toLocaleString()}</dd>
           <dt>config hash</dt>
           <dd>{data.config_hash}</dd>
           <dt>git commit</dt>

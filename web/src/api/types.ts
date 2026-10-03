@@ -1,56 +1,74 @@
 /** Response shapes from the Detour API. Mirrors api/schemas.py. */
 
-export interface Listener {
-  user_id: string;
-  explorer_score: number;
-  personalised_lambda: number;
-  train_listens: number;
-  top_artists: string[];
+export interface ArtistPoint {
+  artist_mbid: string;
+  name: string;
+  plays: number;
+  x: number;
+  y: number;
 }
 
-export interface TrackRecommendation {
-  item_id: string;
-  rank: number;
-  relevance: number;
-  novelty: number;
-  is_anchor: boolean;
-  artist_name: string;
-  track_name: string;
-  why: string;
+export interface Neighbour {
+  artist_mbid: string;
+  name: string;
+  similarity: number;
+  x: number;
+  y: number;
 }
 
-export interface Recommendations {
-  user_id: string;
-  explorer_score: number;
-  personalised_lambda: number;
-  lambda_used: number;
-  k: number;
-  anchor_count: number;
-  items: TrackRecommendation[];
+export interface Coverage {
+  matched_artists: number;
+  unmatched_artists: number;
+  artist_coverage: number;
+  play_coverage: number;
+  biggest_misses: string[];
 }
 
-export interface FrontierPoint {
-  lambda: number;
+export interface Island {
+  label: string;
+  size: number;
+  plays: number;
+  isolation: number;
+  artists: ArtistPoint[];
+}
+
+export interface ListenerMap {
+  listener: string;
+  coverage: Coverage;
+  total_plays: number;
+  artists: ArtistPoint[];
+  islands: Island[];
+  edges: ArtistPoint[];
+  frontier: Neighbour[];
+}
+
+export interface ArtistMap {
+  artists: ArtistPoint[];
+  total_artists: number;
+  showing: number;
+}
+
+export interface ArtistNeighbours {
+  artist_mbid: string;
+  name: string;
+  neighbours: Neighbour[];
+}
+
+export interface ModelScores {
   [metric: string]: number | null;
 }
 
-export interface ModelMetrics {
-  [metric: string]: number | null | Record<string, unknown>;
-}
-
-export interface EvalReport {
+export interface MapReport {
   schema_version: number;
+  report_kind: string;
   run_id: string;
   generated_at: string;
   split: string;
-  users_evaluated: number;
-  cold_users: number;
-  segment_sizes: Record<string, number>;
-  fixed_lambda: number;
+  listeners_with_adoptions: number;
+  vocabulary: number;
   k_values: number[];
   config_hash: string;
   git_commit: string | null;
-  models: Record<string, ModelMetrics>;
-  lambda_sweep: FrontierPoint[];
+  models: Record<string, ModelScores>;
   confidence_intervals: unknown;
 }

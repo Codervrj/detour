@@ -1,0 +1,124 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: "#/map"
+        - text: De
+        - emphasis [ref=e7]: tour
+      - navigation "Main" [ref=e8]:
+        - link "Your map" [ref=e9] [cursor=pointer]:
+          - /url: "#/map"
+        - link "Islands" [ref=e10] [cursor=pointer]:
+          - /url: "#/islands"
+        - link "Results" [ref=e11] [cursor=pointer]:
+          - /url: "#/results"
+        - link "Method" [ref=e12] [cursor=pointer]:
+          - /url: "#/method"
+  - main [ref=e13]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - heading "The corners of your taste" [level=1] [ref=e31]
+        - paragraph [ref=e32]: Your artists, grouped by where they sit on the map. Nothing here was labelled with a genre; these groups were found in the listening data itself.
+      - list [ref=e33]:
+        - listitem [ref=e34]:
+          - generic [ref=e35]:
+            - heading "Slade" [level=2] [ref=e36]
+            - paragraph [ref=e37]: 307 artists, 6,699 plays
+          - paragraph [ref=e38]: Sits at the heart of your taste.
+          - list [ref=e40]:
+            - listitem [ref=e41]: Slade 1,345
+            - listitem [ref=e42]: Queen 394
+            - listitem [ref=e43]: David Bowie 351
+            - listitem [ref=e44]: The Pretenders 314
+            - listitem [ref=e45]: Madness 278
+            - listitem [ref=e46]: Incognito 221
+            - listitem [ref=e47]: Elvis Costello 220
+            - listitem [ref=e48]: Elvis Costello & The Attractions 179
+            - listitem [ref=e49]: The Who 148
+            - listitem [ref=e50]: T. Rex 125
+            - listitem [ref=e51]: The Kinks 115
+            - listitem [ref=e52]: Electric Light Orchestra 106
+            - listitem [ref=e53]: Aerosmith 104
+            - listitem [ref=e54]: Paul Weller 74
+        - listitem [ref=e55]:
+          - generic [ref=e56]:
+            - heading "The Beatles" [level=2] [ref=e57]
+            - paragraph [ref=e58]: 215 artists, 3,666 plays
+          - paragraph [ref=e59]: Off to one side of your taste.
+          - list [ref=e61]:
+            - listitem [ref=e62]: The Beatles 817
+            - listitem [ref=e63]: Pink Floyd 474
+            - listitem [ref=e64]: Die Fantastischen Vier 265
+            - listitem [ref=e65]: Everything but the Girl 235
+            - listitem [ref=e66]: Massive Attack 166
+            - listitem [ref=e67]: David Holmes 143
+            - listitem [ref=e68]: Muse 104
+            - listitem [ref=e69]: Radiohead 99
+            - listitem [ref=e70]: Foo Fighters 98
+            - listitem [ref=e71]: Bauhaus 85
+            - listitem [ref=e72]: KT Tunstall 82
+            - listitem [ref=e73]: Joy Division 67
+            - listitem [ref=e74]: Frank Zappa 56
+            - listitem [ref=e75]: The Jam 55
+        - listitem [ref=e76]:
+          - generic [ref=e77]:
+            - heading "Tones on Tail" [level=2] [ref=e78]
+            - paragraph [ref=e79]: 116 artists, 423 plays
+          - paragraph [ref=e80]: A long way from everything else you play.
+          - list [ref=e82]:
+            - listitem [ref=e83]: Tones on Tail 25
+            - listitem [ref=e84]: Tin Machine 23
+            - listitem [ref=e85]: Les Rita Mitsouko 21
+            - listitem [ref=e86]: 26fa8b67 18
+            - listitem [ref=e87]: Charlie Feathers 17
+            - listitem [ref=e88]: Marc Bolan 14
+            - listitem [ref=e89]: Seafood 14
+            - listitem [ref=e90]: The Matt Kurz One 12
+            - listitem [ref=e91]: Al Hirt 10
+            - listitem [ref=e92]: b10bbbfc 10
+            - listitem [ref=e93]: 布袋寅泰 10
+            - listitem [ref=e94]: Immaculate Machine 8
+            - listitem [ref=e95]: Nick Perito 7
+            - listitem [ref=e96]: Elvis Costello & The Imposters 6
+      - region [ref=e97]:
+        - heading "The edges of your taste" [level=2] [ref=e99]
+        - paragraph [ref=e100]: The artists you play that sit furthest from your centre. These are where your taste already touches territory you have otherwise not explored.
+        - list [ref=e101]:
+          - listitem [ref=e102]:
+            - text: hide with Spread Beaver
+            - generic [ref=e103]: 1 plays
+          - listitem [ref=e104]:
+            - text: The Hit Girls
+            - generic [ref=e105]: 1 plays
+          - listitem [ref=e106]:
+            - text: fae6f524
+            - generic [ref=e107]: 4 plays
+          - listitem [ref=e108]:
+            - text: Kazik Staszewski
+            - generic [ref=e109]: 3 plays
+          - listitem [ref=e110]:
+            - text: The Vampire Sound Inc.
+            - generic [ref=e111]: 4 plays
+          - listitem [ref=e112]:
+            - text: Pino Donaggio
+            - generic [ref=e113]: 3 plays
+          - listitem [ref=e114]:
+            - text: Jacques Loussier
+            - generic [ref=e115]: 3 plays
+          - listitem [ref=e116]:
+            - text: Eddie Beram
+            - generic [ref=e117]: 3 plays
+          - listitem [ref=e118]:
+            - text: The Tubes
+            - generic [ref=e119]: 1 plays
+          - listitem [ref=e120]:
+            - text: Sabaton
+            - generic [ref=e121]: 1 plays
+          - listitem [ref=e122]:
+            - text: Rise Against
+            - generic [ref=e123]: 6 plays
+          - listitem [ref=e124]:
+            - text: Sum 41
+            - generic [ref=e125]: 6 plays
+  - contentinfo [ref=e27]:
+    - generic [ref=e28]: Built on the ListenBrainz data model from the MetaBrainz Foundation, with metadata from MusicBrainz. Listening histories from MLHD+, artist names from MusicBrainz.

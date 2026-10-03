@@ -1,85 +1,72 @@
 /** Shared test data, shaped like the API responses. */
 
-import type { EvalReport, Listener, Recommendations, TrackRecommendation } from "../api/types";
+import type { ArtistMap, ArtistPoint, ListenerMap, MapReport } from "../api/types";
 
-export const loyalist: Listener = {
-  user_id: "user-001",
-  explorer_score: 0.0,
-  personalised_lambda: 0.1,
-  train_listens: 320,
-  top_artists: ["Artist 0007"],
-};
-
-export const explorer: Listener = {
-  user_id: "user-049",
-  explorer_score: 0.44,
-  personalised_lambda: 0.41,
-  train_listens: 410,
-  top_artists: ["Artist 0082", "Artist 0020", "Artist 0053"],
-};
-
-export const listeners: Listener[] = [loyalist, explorer];
-
-function track(rank: number, novelty: number, isAnchor: boolean): TrackRecommendation {
-  return {
-    item_id: `rec-${rank}`,
-    rank,
-    relevance: 1 - rank * 0.1,
-    novelty,
-    is_anchor: isAnchor,
-    artist_name: `Artist ${rank}`,
-    track_name: `Track ${rank}`,
-    why: isAnchor ? "You already listen to this artist." : "A step out from Artist 0082.",
-  };
+function artist(name: string, plays: number, x: number, y: number): ArtistPoint {
+  return { artist_mbid: `mb-${name.toLowerCase().replace(/\s+/g, "-")}`, name, plays, x, y };
 }
 
-export function recommendations(lambda: number): Recommendations {
-  // Higher lambda shifts novelty up, mirroring the real re-ranker.
-  const items = [track(1, 0.2 + lambda * 0.5, true), track(2, 0.3 + lambda * 0.5, false)];
-  return {
-    user_id: explorer.user_id,
-    explorer_score: explorer.explorer_score,
-    personalised_lambda: explorer.personalised_lambda,
-    lambda_used: lambda,
-    k: items.length,
-    anchor_count: items.filter((item) => item.is_anchor).length,
-    items,
-  };
-}
+export const background: ArtistMap = {
+  artists: [artist("Queen", 900, 0.3, 0.3), artist("Pixies", 400, 0.7, 0.6)],
+  total_artists: 21951,
+  showing: 2,
+};
 
-export const report: EvalReport = {
-  schema_version: 1,
+export const listenerMap: ListenerMap = {
+  listener: "u1",
+  coverage: {
+    matched_artists: 638,
+    unmatched_artists: 12,
+    artist_coverage: 0.9815,
+    play_coverage: 0.996,
+    biggest_misses: ["Some Obscure Band"],
+  },
+  total_plays: 10788,
+  artists: [
+    artist("Pink Floyd", 820, 0.31, 0.29),
+    artist("David Bowie", 540, 0.35, 0.33),
+    artist("The Beatles", 410, 0.4, 0.45),
+  ],
+  islands: [
+    {
+      label: "Pink Floyd",
+      size: 328,
+      plays: 7415,
+      isolation: 0.05,
+      artists: [artist("Pink Floyd", 820, 0.31, 0.29), artist("Queen", 300, 0.3, 0.3)],
+    },
+    {
+      label: "The Beatles",
+      size: 170,
+      plays: 2599,
+      isolation: 0.23,
+      artists: [artist("The Beatles", 410, 0.4, 0.45)],
+    },
+  ],
+  edges: [artist("Pino Donaggio", 3, 0.85, 0.12)],
+  frontier: [
+    { artist_mbid: "mb-bee-gees", name: "Bee Gees", similarity: 0.702, x: 0.33, y: 0.31 },
+    { artist_mbid: "mb-the-cars", name: "The Cars", similarity: 0.697, x: 0.36, y: 0.34 },
+  ],
+};
+
+export const report: MapReport = {
+  schema_version: 2,
+  report_kind: "map",
   run_id: "testrun1",
-  generated_at: "2026-10-03T04:00:00+00:00",
+  generated_at: "2026-10-03T06:00:00+00:00",
   split: "val",
-  users_evaluated: 50,
-  cold_users: 0,
-  segment_sizes: { loyalists: 17, middle: 16, explorers: 17 },
-  fixed_lambda: 0.2,
+  listeners_with_adoptions: 1694,
+  vocabulary: 21951,
   k_values: [10, 20],
   config_hash: "abc123",
   git_commit: null,
   models: {
-    popularity: { "ndcg@20": 0.0352, "discovery_recall@20": 0.0596, "novelty@20": 1.18 },
-    als: { "ndcg@20": 0.0512, "discovery_recall@20": 0.1186, "novelty@20": 2.24 },
-    ours: {
-      "ndcg@20": 0.0508,
-      "discovery_recall@20": 0.0793,
-      "novelty@20": 2.84,
-      "familiarity_anchor_rate@20": 0.306,
-      "catalogue_coverage@20": 0.4885,
-      "segments@20": {
-        loyalists: { users: 17, "ndcg@20": 0.045, "discovery_recall@20": 0.33 },
-        middle: { users: 16, "ndcg@20": 0.058, "discovery_recall@20": 0.077 },
-        explorers: { users: 17, "ndcg@20": 0.038, "discovery_recall@20": 0.117 },
-        cold: { users: 0 },
-      },
-    },
+    random: { adoption_percentile: 0.4965, matched_percentile: 0.4955, median_rank: 10722, "hit@10": 0.0005, "hit@20": 0.0009 },
+    popularity: { adoption_percentile: 0.5115, matched_percentile: 1.0, median_rank: 11138, "hit@10": 0.0004, "hit@20": 0.0007 },
+    als: { adoption_percentile: 0.3935, matched_percentile: 0.3775, median_rank: 8042, "hit@10": 0.0183, "hit@20": 0.0291 },
+    item2vec: { adoption_percentile: 0.2891, matched_percentile: 0.2285, median_rank: 5533, "hit@10": 0.0039, "hit@20": 0.0079 },
+    ppmi_svd: { adoption_percentile: 0.1158, matched_percentile: 0.1876, median_rank: 1658, "hit@10": 0.0286, "hit@20": 0.0464 },
   },
-  lambda_sweep: [
-    { lambda: 0.0, "ndcg@20": 0.0463, "novelty@20": 2.01, "discovery_recall@20": 0.1586 },
-    { lambda: 0.5, "ndcg@20": 0.0395, "novelty@20": 3.07, "discovery_recall@20": 0.1296 },
-    { lambda: 1.0, "ndcg@20": 0.0289, "novelty@20": 4.24, "discovery_recall@20": 0.037 },
-  ],
   confidence_intervals: null,
 };

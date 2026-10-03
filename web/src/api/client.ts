@@ -1,6 +1,6 @@
-/** Thin fetch wrapper. The API serves pre-computed artefacts, so every call is a GET. */
+/** Thin fetch wrapper. The API serves a pre-computed map, so every call is a GET. */
 
-import type { EvalReport, Listener, Recommendations } from "./types";
+import type { ArtistMap, ArtistNeighbours, ListenerMap, MapReport } from "./types";
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
@@ -34,10 +34,11 @@ async function get<T>(path: string): Promise<T> {
 }
 
 export const api = {
-  listeners: () => get<Listener[]>("/listeners"),
-  recommendations: (userId: string, lambda: number, k = 20) =>
-    get<Recommendations>(
-      `/recommendations/${encodeURIComponent(userId)}?lambda=${lambda}&k=${k}`,
-    ),
-  latestReport: () => get<{ report: EvalReport }>("/report/latest").then((b) => b.report),
+  map: (limit = 3000) => get<ArtistMap>(`/map?limit=${limit}`),
+  listeners: () => get<string[]>("/listeners"),
+  listener: (id: string) => get<ListenerMap>(`/listener/${encodeURIComponent(id)}`),
+  me: () => get<ListenerMap>("/me"),
+  artist: (mbid: string, k = 12) =>
+    get<ArtistNeighbours>(`/artist/${encodeURIComponent(mbid)}?k=${k}`),
+  latestReport: () => get<{ report: MapReport }>("/report/latest").then((b) => b.report),
 };
