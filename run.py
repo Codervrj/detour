@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -38,10 +39,16 @@ PIPELINE_ARTEFACTS = [
 RAW_LISTENS = ROOT / "data" / "raw" / "listens.parquet"
 
 
+def resolve(command: list[str]) -> list[str]:
+    """Expand the executable to a full path, so Windows finds pnpm.CMD and friends."""
+    found = shutil.which(command[0], path=ENV.get("PATH"))
+    return [found, *command[1:]] if found else command
+
+
 def run(command: list[str], check: bool = True) -> int:
     """Run a command in the project root, streaming its output."""
     print(f"\n$ {' '.join(command)}", flush=True)
-    result = subprocess.run(command, cwd=ROOT, env=ENV, shell=False)
+    result = subprocess.run(resolve(command), cwd=ROOT, env=ENV, shell=False)
     if check and result.returncode != 0:
         sys.exit(result.returncode)
     return result.returncode
@@ -148,7 +155,7 @@ def cmd_lint(_: argparse.Namespace) -> None:
 def spawn(command: list[str], label: str) -> subprocess.Popen[bytes]:
     """Start a long-running child process."""
     print(f"  {label}: {' '.join(command)}")
-    return subprocess.Popen(command, cwd=ROOT, env=ENV, shell=False)
+    return subprocess.Popen(resolve(command), cwd=ROOT, env=ENV, shell=False)
 
 
 def cmd_demo(args: argparse.Namespace) -> None:
